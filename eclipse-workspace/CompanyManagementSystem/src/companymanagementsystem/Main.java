@@ -1,17 +1,29 @@
 /*Program implementation assumes:
 	1. Manager can't have another manager, i.e. he can't be a worker of another manager's team
-	2. Paycheck calculation:
+	2. Paycheck calculation for regular workers:
 	   - Out of all 30 days in a month 4 are free from work
 	   - Standard hours are 8 per day
 	3. Managers have no sick days and their paychecks do not depend on working hours.
 	4. Managers have monthly bonuses, that are calculated as a random value between 0 and 0.2 * basic salary.
-	5. Once being calculated manager's bonus for the month can't be recalculated without monthly maintaince operation.
-	6. Vacations and sickdays do not affect payment. Being entered on a certain day
-	   they just add 8 daily hours that day.
-	7. Due to taking sickdays or vacations must be simultaneous with setting 8 working hours for each of those days,
+	5. In addition to current month program tracks data for current year. For this purpose
+	days are considered to be inside 2-dimensional array: 12 months and 30 days.
+	6. Current month is defined by Person.CURRENT_MONTH (1 - 12). Default value is 1.
+	7. Once being calculated manager's bonus for the month can't be recalculated without
+	monthly maintaince operation.
+	8. Vacations and sickdays do not affect payment. Being entered on a certain day 
+	they just add 8 daily hours that day.
+	9. Vacations and sickdays can be entered only for days of current month
+	   Spendings can be entered for days of any month (1 - 12)
+	10. Due to taking sickdays or vacations must be simultaneous with setting 8 working hours for each of those days,
 		some validation logic is doubled in RegularWorker/Worker and Main classes.
-	8. Default sickdays and vacations values are assumed to be reset every month. 
-	9. TECHNICAL operation that resets all days additionally resets calculated bonus for managers enabling it to be calculated again.
+	11. Sickdays and vacations values are assumed to be reset to default values EVERY YEAR, NOT MONTH! 
+	12. PRogram implements single common TECHNICAL operation that does following actions:
+	     - adds 1 to CURRENT_MONTH (after 12 it switches to 1)
+	     - if month changes from 12 to 1 then additionally:
+	     	- erases workers' daily hours for all days in year
+	     	- erases clients' daily spendings for all days in year
+	     	- resets calculated bonus for managers enabling it to be calculated again
+	     	- resets vacations and sickdays to default values
 	   This operation is assumed to be performed after ending of each month.
 */
 package companymanagementsystem;
@@ -35,84 +47,85 @@ public class Main {
 		
 	public static void main(String[] args) {
 		
-		regWorkers = new ArrayList<>();
-		clients = new ArrayList<>();
-		managers = new ArrayList<>();
-		
-		// creating test objects
-		Client sam = new Client("Sam", "Shufer");
-		clients.add(sam);
-		Manager alex = new Manager("Alex", 12000.0);
-		managers.add(alex);
-		RegularWorker tom = new RegularWorker("Tom", 7500);
-		regWorkers.add(tom);
-		
-		Client sam2 = new Client("Sam2", "Shufer2");
-		clients.add(sam2);
-		Manager alex2 = new Manager("Alex2", 12002.0);
-		managers.add(alex2);
-		RegularWorker tom2 = new RegularWorker("Tom2", 7502);
-		regWorkers.add(tom2);
-		
-		RegularWorker tom22 = new RegularWorker("Tom22", 7522);
-		regWorkers.add(tom22);
-		
-		alex2.addTeamMember(tom2);
-		alex2.addTeamMember(tom22);
-
-		
-		// populating some objects' data
-		sam.populateDailySpending();
-		alex.populateDailyHours();
-		tom.populateDailyHours();
-
-
-		// main menu cycle
-		while (!isMenuExit) {
-			printUserMenu();
-			inputString = scan.nextLine();
-			inputInt = tryStringToInt(inputString);
+		try {
+			regWorkers = new ArrayList<>();
+			clients = new ArrayList<>();
+			managers = new ArrayList<>();
 			
-			if (inputInt == -1) {
-				continue;
-			}
+			// creating test objects
+			Client sam = new Client("Sam", "Shufer");
+			clients.add(sam);
+			Manager alex = new Manager("Alex", 12000.0);
+			managers.add(alex);
+			RegularWorker tom = new RegularWorker("Tom", 7500);
+			regWorkers.add(tom);
 			
-			switch (inputInt) {
-			case 1 -> printClients();
-			case 2 -> printRegWorkers();
-			case 3 -> printManagers();
-			case 4 -> addPerson();
-			case 5 -> assignWorker();
-			case 6 -> enterHours();
-			case 7 -> enterSpending();
-			case 8 -> enterSickday();
-			case 9 -> enterVacation();
-			case 10 -> calculatePaycheck();
-			case 11 -> resetAllDays();
-			default -> {
-				isMenuExit = true;
-				System.out.println("Exiting the menu...");
+			Client sam2 = new Client("Sam2", "Shufer2");
+			clients.add(sam2);
+			Manager alex2 = new Manager("Alex2", 12002.0);
+			managers.add(alex2);
+			RegularWorker tom2 = new RegularWorker("Tom2", 7502);
+			regWorkers.add(tom2);
+			
+			RegularWorker tom22 = new RegularWorker("Tom22", 7522);
+			regWorkers.add(tom22);
+			
+			alex2.addTeamMember(tom2);
+			alex2.addTeamMember(tom22);
+	
+			
+			// populating some objects' data
+			sam.populateDailySpending();
+			alex.populateDailyHours();
+			tom.populateDailyHours();
+	
+	
+			// main menu cycle
+			while (!isMenuExit) {
+				printUserMenu();
+				inputString = scan.nextLine();
+				inputInt = tryStringToInt(inputString);
+				
+				if (inputInt == -1) {
+					continue;
+				}
+				
+				switch (inputInt) {
+				case 1 -> printClients();
+				case 2 -> printRegWorkers();
+				case 3 -> printManagers();
+				case 4 -> addPerson();
+				case 5 -> assignWorker();
+				case 6 -> enterHours();
+				case 7 -> enterSpending();
+				case 8 -> enterSickday();
+				case 9 -> enterVacation();
+				case 10 -> calculatePaycheck();
+				case 11 -> monthlyMaintaince();
+				default -> {
+					isMenuExit = true;
+					System.out.println("Exiting the menu...");
+					}
+				}
+				}
+			} finally {
+				scan.close();
 			}
-			}
-		}
-
-		
-
 	}
 	
 		public static void printUserMenu() {
 			
 			System.out.println(line + "\n"
 					+ "CHOOSE one of the following available options:\n"
-					+ " 1 - to VIEW a CLIENTS list\n"
-					+ " 2 - to VIEW a REGULAR WORKERS list\n"
-					+ " 3 - to VIEW a MANAGERS list\n"
-					+ " 4 - to ADD a PERSON (client or worker)\n"
-					+ " 5 - to ASSIGN REGULAR WORKER to MANAGER's TEAM\n"
-					+ " 6 - to ENTER / MODIFY HOURS\n"
-					+ " 7 - to ENTER / MODIFY SPENDING\n"
-					+ " 8 - to TAKE SICKDAYS FOR REGULAR WORKERS\n"
-					+ " 9 - to TAKE VACATIONS FOR WORKERS\n"
+					+ " 1  - to VIEW a CLIENTS list\n"
+					+ " 2  - to VIEW a REGULAR WORKERS list\n"
+					+ " 3  - to VIEW a MANAGERS list\n"
+					+ " 4  - to ADD a PERSON (client or worker)\n"
+					+ " 5  - to ASSIGN REGULAR WORKER to MANAGER's TEAM\n"
+					+ " 6  - to ENTER / MODIFY HOURS\n"
+					+ " 7  - to ENTER / MODIFY SPENDING\n"
+					+ " 8  - to TAKE SICKDAYS FOR REGULAR WORKERS\n"
+					+ " 9  - to TAKE VACATIONS FOR WORKERS (both regular workers and managers)\n"
 					+ " 10 - to CALCULATE PAYCHECK\n"
 					+ " 11 - >> TECHNICAL << monthly maintaince\n"
 					+ " 12 - to EXIT MENU\n"
@@ -449,7 +462,8 @@ public class Main {
 			workerFound.printDailyHours();
 		
 			System.out.println(line + "\n"
-					+ "Please choose number of day to modify (1 - 30):" + "\n"
+					+ "Please choose number of day in current month "
+					+ Person.getCURRENT_MONTH() + " to modify (1 - 30):" + "\n"
 					+ line + "\nYOUR CHOICE: " );
 					
 			inputString = scan.nextLine();
@@ -477,21 +491,23 @@ public class Main {
 				return false;
 			}
 			
-			workerFound.logHours(inputInt, inputDouble);
-			System.out.println(line + "\nDaily hours for day " + inputInt
+			workerFound.logHours(Person.getCURRENT_MONTH(), inputInt, inputDouble);
+			System.out.println(line + "\nDaily hours for day " + inputInt + " of month " + Person.getCURRENT_MONTH()
 					+ " for worker id " + workerFound.getId() + " were updated successfully and updated hours are below");
 			workerFound.printDailyHours();
 			return true;
 		}
 		
-		// allows to set spending of client for specific day
+		// allows to set spending of client for specific day of specific month
 		public static boolean enterSpending() {
 			
 			Client clientFound;
+			int monthChosen;
 			
 			System.out.println(line + "\nENTERING / MODIFYING CLIENT's SPENDING menu is chosen...\n");
 			printClients();
 
+			//identifying client's id
 			System.out.println(line + "\n"
 					+ "Please choose from LIST ABOVE ID of CLIENT:" + "\n"
 					+ line + "\nYOUR CHOICE: " );
@@ -506,15 +522,32 @@ public class Main {
 			}
 			System.out.println(line + "\nCLIENT ID " + inputString + " was chosen");
 			
+			// searching for existing client
 			clientFound = findClientById(inputString);
 			
 			if (clientFound == null) {
 				System.out.println("There is no client with id = " + inputString);
 				return false;
 			}
-				
+			
+			// printing daily spending
 			clientFound.printDailySpending();
 		
+			// identifying month number
+			System.out.println(line + "\n"
+					+ "Please choose number of month to modify day within (1 - 12):" + "\n"
+					+ line + "\nYOUR CHOICE: " );
+					
+			inputString = scan.nextLine();
+			System.out.println(line + "\nNUMBER OF MONTH " + inputString + " was chosen");
+
+			monthChosen = tryStringToInt(inputString);
+			
+			if (monthChosen < 1 || monthChosen > 12) {
+				System.out.println("Month number must be between 1 and 12 including");
+				return false;
+			}
+			
 			System.out.println(line + "\n"
 					+ "Please choose number of day to modify (1 - 30):" + "\n"
 					+ line + "\nYOUR CHOICE: " );
@@ -544,8 +577,8 @@ public class Main {
 				return false;
 			}
 			
-			clientFound.updateDailySpending(inputInt, inputDouble);
-			System.out.println(line + "\nDaily spendings for day " + inputInt
+			clientFound.updateDailySpending(monthChosen, inputInt, inputDouble);
+			System.out.println(line + "\nDaily spendings for day " + inputInt + " in month " + monthChosen 
 					+ " for client id " + clientFound.getId() + " were updated successfully and updated spendings are below");
 			clientFound.printDailySpending();
 			return true;
@@ -642,10 +675,10 @@ public class Main {
 				daysChosen.add(inputInt);
 
 				// updating working hours for specific sickday
-				workerFound.logHours(inputInt, Worker.getDEFAULT_WORKING_HOURS());
+				workerFound.logHours(Person.getCURRENT_MONTH(), inputInt, Worker.getDEFAULT_WORKING_HOURS());
 				
-				System.out.println("\nFor worker id " + workerFound.getId() + " for day number "
-						+ inputInt + " working hours updated to 8");
+				System.out.println("\nFor worker id " + workerFound.getId() + " for day number " + inputInt
+						+ " in month " + Person.getCURRENT_MONTH() + " working hours updated to 8");
 				exitDays = true;
 				}
 			}
@@ -682,7 +715,7 @@ public class Main {
 						+ "Returning to the main menu...");
 				return false;
 			}
-			System.out.println(line + "\nRegular Worker ID " + inputString + " was chosen");
+			System.out.println(line + "\nWorker ID " + inputString + " was chosen");
 			
 			// user entered id of either regular worker or manager
 			regWorkerFound = findWorkerById(inputString);
@@ -725,7 +758,7 @@ public class Main {
 					+ "Please choose " + inputInt + " of vacation days: each on a new line.\n"
 					+ " For all of them working hours will be updated to 8");
 			
-			// saving days that are entered to forbid repetition
+			// ArrayList for saving days that are entered to forbid repetition
 			ArrayList<Integer> daysChosen = new ArrayList<>();
 			for (int i = 1; i <= vacationsEntered; i++) {
 				boolean exitDays = false;
@@ -750,7 +783,7 @@ public class Main {
 				daysChosen.add(inputInt);
 				
 				// updating working hours for specific vacation			
-				workerFound.logHours(inputInt, Worker.getDEFAULT_WORKING_HOURS());
+				workerFound.logHours(Person.getCURRENT_MONTH(), inputInt, Worker.getDEFAULT_WORKING_HOURS());
 				System.out.println("\nFor worker id " + workerFound.getId() + " for day number "
 						+ inputInt + " working hours updated to 8");
 				exitDays = true;
@@ -808,13 +841,46 @@ public class Main {
 
 			System.out.println(line + "\n"
 					+ "Worker with id " + workerFound.getId() + " earned "
-					+ workerFound.calculatePaycheck() + " this month");
+					+ workerFound.calculatePaycheck(Person.getCURRENT_MONTH()) + " this month");
 			return true;
 		}
 		
-		// for all workers resets sickdays and vacations left to default values
-		//also rolls back managers' bonuses calculation 
-		public static boolean resetAllDays( ) {
+		// resets managers' bonuses
+		private static void resetManagersBonuses() {
+			for (Manager manager : managers) {
+				for (int month = 1; month <= 12; month++ ) {
+					manager.setCalculatedBonus(month, 0.0);
+				}
+			}
+		}
+		
+		//resets daily hours for workers
+		private static void resetDailyHours() {
+			for (RegularWorker regWorker : regWorkers) {
+				regWorker.eraseDailyHours();
+			}
+			for (Manager manager : managers) {
+				manager.eraseDailyHours();
+			}
+		}
+		
+		//resets daily spendings for clients
+		private static void resetDailySpendings() {
+			for (Client client : clients) {
+				client.eraseDailySpendings();
+			}
+		}
+		
+				
+	/*
+	 *  - adds 1 to CURRENT_MONTH (after 12 it switches to 1)
+	 *     - if month changes from 12 to 1 then additionally:
+	 *     		- erases workers' daily hours for all days in year
+	 * 			- erases clients' daily spendings for all days in year
+	 * 			- resets calculated bonus for managers enabling it to be calculated again
+	 * 			- resets vacations and sickdays to default values
+	 */
+		public static boolean monthlyMaintaince( ) {
 			
 			
 			System.out.println(line + "\nRESET ALL DAYS menu is chosen...\n");
@@ -822,7 +888,6 @@ public class Main {
 
 			System.out.println(line + "\n"
 					+ "This operation is A TECHNICAL ONE and it is allowed to be performed after ending of a month only!\n"
-					+ "It resets all sickdays and vacations available to their default monthly values.\n"
 					+ "Please, confirm previous month is over: Y / N\n"
 					+ line + "\nYOUR CHOICE: " );
 					
@@ -841,14 +906,34 @@ public class Main {
 				return false;
 			}
 			
-			// creating technical arraylist of class Worker just to use corresponding method in PERSON class
-			ArrayList<Worker> entireWorkersList = new ArrayList<>();
-			entireWorkersList.addAll(regWorkers);
-			entireWorkersList.addAll(managers);
+			// changes current month to next one
+			Person.setCURRENT_MONTH(Person.getCURRENT_MONTH() == 12 ? 1 : Person.getCURRENT_MONTH() + 1);
+			System.out.println("Month number was changed to " + Person.getCURRENT_MONTH() + " successfully");
 			
-			Person.resetAllDays(entireWorkersList);
-			System.out.println(line + "\nRESET ALL DAYS operation was performed successfully!");
+			// if month changes from 12 to 1 then additionally:
+	     	//   - erases workers' daily hours for all days in year
+	     	//   - erases clients' daily spendings for all days in year 
+			//	 - resets calculated bonus for managers enabling it to be calculated again
+			//   - resets vacations and sickdays to default values
+			if (Person.getCURRENT_MONTH() == 1) {
+				
+				// creating technical arraylist of class Worker just to use corresponding method in PERSON class
+				ArrayList<Worker> entireWorkersList = new ArrayList<>();
+				entireWorkersList.addAll(regWorkers);
+				entireWorkersList.addAll(managers);
+				
+				Person.resetAllDays(entireWorkersList);
+				System.out.println(line + "\nRESET ALL DAYS operation was performed successfully!");
+				
+				// resets calculated bonuses for managers
+				resetManagersBonuses();
+				System.out.println("Managers' bonuses reset completed successfully");
+				
+				resetDailyHours();
+				System.out.println("Workers' daily hours' reset completed successfully");
+				resetDailySpendings();
+				System.out.println("Clients' daily spendings' reset completed successfully");
+			}
 			return true;
 		}
-		
 }

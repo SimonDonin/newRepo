@@ -20,7 +20,7 @@ public class RegularWorker extends Worker {
 		}
 
 	@Override
-	public double calculatePaycheck() {
+	public double calculatePaycheck(int month) {
 		
 		/*Assuming:
 		 - Out of all 30 days in a month 4 are free from work
@@ -28,7 +28,7 @@ public class RegularWorker extends Worker {
 		 - */
 		double salaryPerHour = getBasicSalary() / (26 * 8);
 		
-		return (double) Math.round(salaryPerHour * getTotalMonthHours() * 100) / 100;
+		return (double) Math.round(salaryPerHour * getTotalMonthHours(month) * 100) / 100;
 	}
 
 	@Override
@@ -36,8 +36,8 @@ public class RegularWorker extends Worker {
 
 		System.out.println("Regular worker " + getName() + " with id " + getId()
 			+ " has basic salary " + getBasicSalary() + ", worked " 
-			+ getTotalMonthHours() + " hours this month and has "+ getVacationDays()
-			+ " vacation days and " + sickDays + " sickdays left");
+			+ getTotalMonthHours(Person.getCURRENT_MONTH()) + " hours this month and has "
+			+ getVacationDays() + " vacation days and " + sickDays + " sickdays left");
 	}
 	
 	//deducts sickdays if sufficient; returns true if successful, otherwise false
@@ -68,7 +68,7 @@ public class RegularWorker extends Worker {
 	public void printSickDays() {
 		
 		System.out.println("\nWorker id = " + getId() + " has "
-				+ sickDays + " sickdays left for this month out of "
+				+ sickDays + " sickdays left for this year out of "
 				+ START_SICK_DAYS + " default sickdays\n");
 		
 	}

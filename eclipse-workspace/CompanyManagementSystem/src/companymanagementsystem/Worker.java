@@ -1,15 +1,12 @@
 package companymanagementsystem;
 
-import java.time.DayOfWeek;
-
 public abstract class Worker extends Person {
 
 	private final static int START_VACATION_DAYS = 10; // Initial vacation days for workers
-	private double[] dailyHours; // Tracks hours worked for the last 30 days
+	private double[][] dailyHours; // Tracks hours worked for the last 30 days
 	private int vacationDays; // Remaining vacation days
 	private double basicSalary;
-	private static final double DEFAULT_WORKING_HOURS = 8.0;
-	
+	private static final double DEFAULT_WORKING_HOURS = 8.0;	
 	
 	public Worker(String name, double basicSalary) {
 		
@@ -23,7 +20,7 @@ public abstract class Worker extends Person {
 		}
 
 		// assigning default values
-		dailyHours = new double[30];
+		dailyHours = new double[12][30];
 		vacationDays = getDefaultVacationDays();
 	}
 	
@@ -38,7 +35,7 @@ public abstract class Worker extends Person {
 	}
 
 
-	public double[] getDailyHours() {
+	public double[][] getDailyHours() {
 		return dailyHours;
 	}
 
@@ -50,13 +47,19 @@ public abstract class Worker extends Person {
 		this.vacationDays = vacationDays;
 	}
 
-	public abstract double calculatePaycheck();
+	public abstract double calculatePaycheck(int month);
 
 	@Override
 	public abstract void displayInfo();
 	
 	// Logs hours for a specific day (validates hours between 0–24)
-	public boolean logHours(int day, double hours) {
+	public boolean logHours(int month, int day, double hours) {
+		
+		// month validation
+		if (month < 1 || month > 12) {
+			System.out.println("Month must be between 1 and 12 including");
+			return false;
+		}		
 		
 		// day validation
 		if (day < 1 || day > 30) {
@@ -70,7 +73,7 @@ public abstract class Worker extends Person {
 			return false;
 		}
 		
-		dailyHours[day - 1] = hours;
+		dailyHours[month - 1][day - 1] = hours;
 		return true;
 	}
 	
@@ -107,6 +110,14 @@ public abstract class Worker extends Person {
 		
 		return true;
 	}
+	// erases daily hours for whole year
+	public void eraseDailyHours() {
+		for (int i = 1; i <= 12; i++) {
+			for (int j = 1; j <= 30; j++) {
+				logHours(i, j, 0.0);
+			}
+		}
+	}
 	
 	// sets number of vacation days to default 
 	protected void resetAllDays() {
@@ -115,11 +126,11 @@ public abstract class Worker extends Person {
 	}
 	
 	// calculates total month working hours 
-		public double getTotalMonthHours() {
+		public double getTotalMonthHours(int month) {
 			
 			double totalMonthHours = 0;
 			
-			for (double dayHours : getDailyHours()) {
+			for (double dayHours : getDailyHours()[month - 1]) {
 				totalMonthHours += dayHours;
 			}
 			return  (double) Math.round(totalMonthHours * 100) / 100;
@@ -127,9 +138,11 @@ public abstract class Worker extends Person {
 	
 		public void populateDailyHours() {
 			
-			for (int i = 1; i <= 30; i++) {
-				if (dailyHours[i - 1] == 0) {
-					dailyHours[i - 1] = (double) Math.round(Math.random() * 12 * 100) / 100;
+			for (int j = 1; j <= 12; j++) {
+				for (int i = 1; i <= 30; i++) {
+					if (dailyHours[j - 1][i - 1] == 0) {
+						dailyHours[j - 1][i - 1] = (double) Math.round(Math.random() * 12 * 100) / 100;
+					}
 				}
 			}
 		}
@@ -137,7 +150,7 @@ public abstract class Worker extends Person {
 		public void printVacations() {
 			
 			System.out.println("\nWorker id = " + getId() + " has "
-					+ vacationDays + " vacations left for this month out of "
+					+ vacationDays + " vacations left for this year out of "
 					+ getDefaultVacationDays() + " default vacations\n");
 			
 		}
@@ -145,11 +158,13 @@ public abstract class Worker extends Person {
 		public void printDailyHours() {
 			
 			System.out.println("\nFor worker id = " + getId() + " daily working"
-					+ " hours for this month are the following:");
-			for (double hours : dailyHours) {
-				System.out.print(hours + " ");
+					+ " hours for this year are the following:");
+			for (int month = 1; month <= 12; month++) {
+				for (double hours : dailyHours[month - 1]) {
+					System.out.print(hours + " ");
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 	
 }

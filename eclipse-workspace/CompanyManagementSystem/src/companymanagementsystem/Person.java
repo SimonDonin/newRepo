@@ -9,6 +9,7 @@ public abstract class Person {
 	private static int idCounter = 1;
 	private String name;
 	private final String id;
+	private static int CURRENT_MONTH = 1;
 	
 	
 	public Person(String name) {
@@ -29,6 +30,14 @@ public abstract class Person {
 	
 	public String getId() {
 		return id;
+	}
+	
+	public static int getCURRENT_MONTH() {
+		return CURRENT_MONTH;
+	}
+
+	public static void setCURRENT_MONTH(int cURRENT_MONTH) {
+		CURRENT_MONTH = cURRENT_MONTH;
 	}
 
 	public abstract void displayInfo();
