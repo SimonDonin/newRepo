@@ -1,113 +1,119 @@
 package bankingsystem;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
-	static Scanner scan = new Scanner(System.in);
 	static String inputString = "";
 	static double inputDouble = 0.0;
 	static int inputInt = -1;
-	static boolean isMenuExit = false;
+	static boolean isSecondMenuExit = true; // defines if we need to perform a bank choosing part of a cycle (first one)
+	static boolean isBasicMenuExit = false; // defines if we need to perform the main bank system menu part of a cycle (second one)
 	static String line = "-".repeat(50);
+	static ArrayList<Bank> banks = new ArrayList<>();
+	static Bank bankChosen;
 	
 	public static void main(String[] args) throws ValidationException {
 		
-		System.out.println("Welcome to Banking System Menu!");
-		Bank leumi = new Bank("Leumi");
-		/*Account myAcc = new Account("Simon's account");
-		leumi.getAccounts().add(myAcc);
-		*/
+		// adding 1 bank to our banks list
+		banks.add(new Bank("Leumi"));
+		System.out.println("Welcome to Banking System!");
 		
-		// main menu cycle
-		while (!isMenuExit) {
-			printUserMenu();
-			try {
-				inputInt = scan.nextInt();
-				System.out.println(line + "\n"
-						+ inputInt + " was chosen\n");
-				switch (inputInt) {
-				case 1 -> System.out.println(leumi);
-				case 2 -> increaseBankBalance(leumi,scan);
-				case 3 -> decreaseBankBalance(leumi,scan);
-				case 4 -> depositAccount(leumi,scan);
-				case 5 -> withdrawAccount(leumi,scan);
-				case 6 -> addAccount(leumi,scan);
-				case 7 -> issueLoan(leumi,scan);
-				case 8 -> returnLoan(leumi,scan);
-				case 9 -> {
-					isMenuExit = true;
-					System.out.println("Exiting the menu...");
+		// printing banks list before choosing the bank to work with
+		printBanks();
+		
+		// working with scanner with auto closing
+		try (Scanner scan = new Scanner(System.in);) {
+			
+			// cycle for all menus
+			while (!isBasicMenuExit || !isSecondMenuExit) {
+				
+				// first part: choose bank
+				if (!isBasicMenuExit) {
+					printBasicMenu();
+					
+					// part for catching exceptions
+					try {
+						inputInt = scan.nextInt();
+						System.out.println(line + "\n"
+								+ inputInt + " was chosen\n");
+						switch (inputInt) {
+						case 1 -> printBanks();
+						case 2 -> addBank(scan);
+						case 3 -> {
+							chooseBank(scan);
+							isBasicMenuExit = true;
+							isSecondMenuExit = false;
+							}
+						case 4 -> {
+							System.out.println("Quiting the program...");
+							System.exit(0);
+							}
+						default -> {
+							System.out.println("No such option... Please, try again");
+							continue;
+							}
+						}
+						} catch (ValidationException e) {
+							System.out.println(e.getMessage() + ". Try Again!");
+						} catch (InputMismatchException e) {
+							System.out.println("Incorrect input! Try Again!");
+						} catch (AccountNotFoundException e) {
+							System.out.println(e.getMessage() + ". Try Again!");
+						}
+					// cleaning the string for following scanner input
+					scan.nextLine();		
 					}
-				default -> {
-					System.out.println("No such option... Please, try again");
-					continue;
+				
+				// second part: banking system menu for bank chosen in the first part
+				if (!isSecondMenuExit) {
+					printUserMenu(bankChosen);
+					try {
+						inputInt = scan.nextInt();
+						System.out.println(line + "\n"
+								+ inputInt + " was chosen\n");
+						switch (inputInt) {
+						case 1 -> System.out.println(bankChosen);
+						case 2 -> increaseBankBalance(bankChosen,scan);
+						case 3 -> decreaseBankBalance(bankChosen,scan);
+						case 4 -> depositAccount(bankChosen,scan);
+						case 5 -> withdrawAccount(bankChosen,scan);
+						case 6 -> addAccount(bankChosen,scan);
+						case 7 -> issueLoan(bankChosen,scan);
+						case 8 -> returnLoan(bankChosen,scan);
+						case 9 -> {
+							// back to first part
+							isSecondMenuExit = true;
+							isBasicMenuExit = false;
+							System.out.println("Returning to the bank choosing menu...");
+							}
+						case 10 -> {
+							System.out.println("Exiting the program...");
+							System.exit(0);
+							}
+						default -> {
+							System.out.println("No such option... Please, try again");
+							continue;
+							}
+						}
+						} catch (ValidationException e) {
+							System.out.println(e.getMessage() + ". Try Again!");
+						} catch (InputMismatchException e) {
+							System.out.println("Incorrect input! Try Again!");
+						} catch (InsufficientFundsException e) {
+							System.out.println(e.getMessage() + ". Try Again!");
+						} catch (AccountNotFoundException e) {
+							System.out.println(e.getMessage() + ". Try Again!");
+						}
+					// cleaning the string for following scanner input
+					scan.nextLine();		
 					}
 				}
-				} catch (ValidationException e) {
-					System.out.println(e.getMessage() + ". Try Again!");
-				} catch (InputMismatchException e) {
-					System.out.println("Incorrect input! Try Again!");
-				} catch (InsufficientFundsException e) {
-					System.out.println(e.getMessage() + ". Try Again!");
-				} catch (AccountNotFoundException e) {
-					System.out.println(e.getMessage() + ". Try Again!");
-				}
-			scan.nextLine();		
-		} 
-		
-	// TODO: handle TypeMismatchException!!!!
-		
-		
-	 /* try { Account myAcc = new Account("Simon's account");
-	 * 
-	 * Account myAcc2 = new Account("Acc2"); Account myAcc3 = new Account("Acc3");
-	 * 
-	 * System.out.println(myAcc);
-	 * 
-	 * myAcc.deposit(333.35); System.out.println(myAcc); myAcc.withdraw(100);
-	 * System.out.println(myAcc);
-	 * 
-	 * myAcc.takeLoan(400); myAcc.withdraw(300); System.out.println(myAcc);
-	 * 
-	 * myAcc.returnLoan(290); System.out.println(myAcc);
-	 * 
-	 * myAcc.takeLoan(70);
-	 * 
-	 * // Bank testing part
-	 * 
-	 * Bank leumi = new Bank("Leumi");
-	 * 
-	 * leumi.getAccounts().add(myAcc); leumi.getAccounts().add(myAcc2);
-	 * 
-	 * 
-	 * System.out.println(leumi);
-	 * 
-	 * System.out.println("just test...");
-	 * 
-	 * leumi.deposit(666.66); leumi.issueLoan("Simon's account", 555.55);
-	 * System.out.println(myAcc); leumi.returnLoan("Simon's account", 333.33);
-	 * System.out.println(myAcc); leumi.returnLoan("Simon's account", 335.0);
-	 * System.out.println(myAcc); System.out.println(leumi);
-	 * 
-	 * leumi.issueLoan("Acc2", 779); System.out.println(leumi);
-	 * 
-	 * myAcc3.deposit(777); leumi.getAccounts().add(myAcc3);
-	 * leumi.returnLoan("Acc3", 500);
-	 * 
-	 * 
-	 * } catch (ValidationException e) { System.err.println(e + ". " +
-	 * e.getMessage()); System.out.println("Change operation sum"); } catch
-	 * (InsufficientFundsException e) { System.err.println(e + ". " +
-	 * e.getMessage()); }
-	 * 
-	 * 
-	 * 
-	 */
-		}
+			}
+}
 	
 	private static void increaseBankBalance(Bank bank, Scanner scan) throws ValidationException, InputMismatchException {
-		
 		double inputDouble;
 		System.out.println(line + "\nINCREASE Bank's balance menu is chosen...\n"
 				+ bank.getName()+ "'s balance is " + bank.getBalance() + "\n"
@@ -120,7 +126,6 @@ public class Main {
 	}
 	
 	private static void decreaseBankBalance(Bank bank, Scanner scan) throws ValidationException, InsufficientFundsException, InputMismatchException {
-		
 		double inputDouble;
 		System.out.println(line + "\nDECREASE Bank's balance menu is chosen...\n"
 				+ bank.getName()+ "'s balance is " + bank.getBalance() + "\n"
@@ -133,7 +138,6 @@ public class Main {
 	}
 
 	private static void depositAccount(Bank bank, Scanner scan) throws ValidationException, InsufficientFundsException, AccountNotFoundException, InputMismatchException {
-	
 	double inputDouble;
 	Account accFound;
 	System.out.println(line + "\nINCREASE account's balance menu is chosen...\n"
@@ -150,7 +154,6 @@ public class Main {
 
 	private static void withdrawAccount(Bank bank, Scanner scan) throws ValidationException, 
 	InsufficientFundsException, AccountNotFoundException, InputMismatchException {
-	
 	double inputDouble;
 	Account accFound;
 	System.out.println(line + "\nDECREASE account's balance menu is chosen...\n"
@@ -166,7 +169,6 @@ public class Main {
 	}
 	
 	private static void addAccount(Bank bank, Scanner scan) throws ValidationException {
-		
 		Account accFound;
 		String inputStr;
 		System.out.println(line + "\nCREATE ACCOUNT menu is chosen...\n"
@@ -185,7 +187,6 @@ public class Main {
 	}
 	
 	private static void issueLoan(Bank bank, Scanner scan) throws ValidationException, InsufficientFundsException, AccountNotFoundException, InputMismatchException {
-		
 		double inputDouble;
 		Account accFound;
 		String inputStr;
@@ -201,7 +202,6 @@ public class Main {
 		}
 	
 	private static void returnLoan(Bank bank, Scanner scan) throws ValidationException, InsufficientFundsException, AccountNotFoundException, InputMismatchException {
-		
 		double inputDouble;
 		Account accFound;
 		String inputStr;
@@ -216,8 +216,9 @@ public class Main {
 		bank.returnLoan(inputStr, inputDouble);
 		}
 
-	public static void printUserMenu() {
-		System.out.println(line + "\nPlease, choose one of the options bellow:\n"
+	public static void printUserMenu(Bank bank) {
+		System.out.println(line + "\nWELCOME TO " + bank.getName().toUpperCase() + "\'S OPTIONS MENU!\n"
+				+ "Please, choose one of the options bellow:\n"
 				+ "\t\"1\" - to PRINT Bank's information\n"
 				+ "\t\"2\" - to INCREASE Bank's balance\n"
 				+ "\t\"3\" - to DECREASE Bank's balance\n"
@@ -226,7 +227,66 @@ public class Main {
 				+ "\t\"6\" - to ADD NEW ACCOUNT \n"
 				+ "\t\"7\" - to ISSUE NEW LOAN\n"
 				+ "\t\"8\" - to RETURN LOAN\n"
-				+ "\t\"9\" - to EXIT");
+				+ "\t\"9\" - BACK TO BANK CHOICE / BACK TO EXIT");
+	}
+	
+	public static Bank findBank(String bankName) throws ValidationException, AccountNotFoundException {
+		Account.validateName(bankName);
+		for (Bank bank : banks) {
+			if (bank.getName().equalsIgnoreCase(bankName)) {
+				return bank;
+			}
+		}
+		throw new AccountNotFoundException("bankName","There is no such bank with name " + bankName);
+	}
+	
+	private static void addBank(Scanner scan) throws ValidationException {
+		
+		String inputStr;
+		Bank bankFound;
+		System.out.println(line + "\nCREATE BANK menu is chosen...\n"
+				+ "Please, enter name of bank to create: \n"
+				+ line + "\nYOUR CHOICE: " );
+		scan.nextLine();
+		inputStr = scan.nextLine();
+		try {
+			bankFound = findBank(inputStr);
+			System.out.println("Bank with name " + inputStr + " already exists!");
+			return;
+			} catch (AccountNotFoundException e) {
+				banks.add(new Bank(inputStr));
+				System.out.println("Bank \"" + inputStr + "\" was created succesfully");
+			}
+		
+	}
+	
+	public static void printBanks() {
+		System.out.println("Banks list is following:");
+		for (Bank bank : banks) {
+			System.out.println(bank);
+			}
+	}
+	
+	
+	public static void printBasicMenu() {
+		System.out.println(line + "\nWelcome to CHOOSE BANK menu!\n"
+				+ "Please, choose one of the options bellow:\n"
+				+ "\t\"1\" - to PRINT Banks list\n"
+				+ "\t\"2\" - to Create new bank\n"
+				+ "\t\"3\" - to CHOOSE BANK to work with\n"
+				+ "\t\"4\" - to QUIT THE PROGRAM");
+	}
+	
+	private static void chooseBank(Scanner scan) throws ValidationException, AccountNotFoundException {
+		String inputStr;
+		System.out.println(line + "\nCHOOSE BANK menu is chosen...\n"
+				+ "Please, enter name of BANK to WORK with: \n"
+				+ line + "\nYOUR CHOICE: " );
+		scan.nextLine();
+		inputStr = scan.nextLine();
+			bankChosen = findBank(inputStr);
+			System.out.println("Bank with name " + inputStr + " was chosen");
+		
 	}
 
 }
