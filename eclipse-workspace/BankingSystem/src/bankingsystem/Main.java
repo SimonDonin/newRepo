@@ -63,7 +63,7 @@ public class Main {
 							System.out.println(e.getMessage() + ". Try Again!");
 						}
 					// cleaning the string for following scanner input
-					scan.nextLine();		
+					//scan.nextLine();		
 					}
 				
 				// second part: banking system menu for bank chosen in the first part
@@ -227,7 +227,8 @@ public class Main {
 				+ "\t\"6\" - to ADD NEW ACCOUNT \n"
 				+ "\t\"7\" - to ISSUE NEW LOAN\n"
 				+ "\t\"8\" - to RETURN LOAN\n"
-				+ "\t\"9\" - BACK TO BANK CHOICE / BACK TO EXIT");
+				+ "\t\"9\" - BACK TO BANK CHOICE\n"
+				+ "\t\"10\" - TO EXIT PROGRAM");
 	}
 	
 	public static Bank findBank(String bankName) throws ValidationException, AccountNotFoundException {
