@@ -1,8 +1,9 @@
 package companymanagementsystem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public abstract class Person {
+public abstract class Person implements Serializable {
 
 // Assuming number of persons is less than 1000. Otherwise ids won't be unique any longer	
 	private static int idCounter = 1;

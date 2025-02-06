@@ -28,11 +28,19 @@
 */
 package companymanagementsystem;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
 
+	static String BASE = "C:\\Users\\sdoni\\eclipse-workspace\\base";
 	static ArrayList<RegularWorker> regWorkers;
 	static ArrayList<Client> clients;
 	static ArrayList<Manager> managers;
@@ -76,6 +84,12 @@ public class Main {
 			alex.populateDailyHours();
 			tom.populateDailyHours();
 
+			// alex.(sam, "clients");
+			// deserializePerson(new File(BASE + "\\clients", "SAM.ser")).displayInfo();
+
+			// serializePerson(alex);
+			// deserializePerson(new File(BASE + "\\clients", "ALEX.ser")).displayInfo();
+
 			// main menu cycle
 			while (!isMenuExit) {
 				printUserMenu();
@@ -103,6 +117,8 @@ public class Main {
 				case 14 -> topYearlyClients();
 				case 15 -> topYearlyWorkers();
 				case 16 -> populateAll();
+				case 17 -> saveDataInFile();
+				case 18 -> loadDataFromFile();
 				default -> {
 					isMenuExit = true;
 					System.out.println("Exiting the menu...");
@@ -112,6 +128,264 @@ public class Main {
 		} finally {
 			scan.close();
 		}
+	}
+
+	private static boolean loadDataFromFile() {
+
+		// inform user about what part of menu he entered
+		System.out.println(
+				line + "\nLOADING DATA FROM FILES menu is chosen...\nDo you want to load data into the files?");
+		System.out.println(line + "\n" + line + "\nYOUR CHOICE (Y/N): ");
+
+		// confirmation of saving data
+		inputString = scan.nextLine();
+
+		if (inputString.isBlank()) {
+			System.out.println("Your answer can't be blank" + "\n" + "Returning to the main menu...");
+			return false;
+		}
+		System.out.println(line + "\nAnswer " + inputString + " was chosen");
+
+		if (inputString.toUpperCase().charAt(0) != 'Y') {
+			System.out.println("Returning to the main menu...");
+			return false;
+		}
+
+		// clearing out lists
+		clients.clear();
+		managers.clear();
+		regWorkers.clear();
+
+		// creating base folder
+		File baseDir = new File(BASE);
+
+		if (baseDir.mkdirs()) {
+			System.out.println("Base folder was created successfully!");
+		} else {
+			System.out.println("Base folder already exists");
+		}
+
+		// creating folders for clients, managers and regular workers
+		// creating folder for clients
+		File clientsFolder = new File(BASE, "clients");
+
+		if (clientsFolder.mkdir()) {
+			System.out.println("Clients folder was created successfully!");
+		} else {
+			System.out.println("Clients folder already exists");
+		}
+
+		// creating folder for managers
+		File managersFolder = new File(BASE, "managers");
+
+		if (managersFolder.mkdir()) {
+			System.out.println("Managers folder was created successfully!");
+		} else {
+			System.out.println("Managers folder already exists");
+		}
+
+		// creating folder for regular workers
+		File regWorkersFolder = new File(BASE, "regWorkers");
+
+		if (regWorkersFolder.mkdir()) {
+			System.out.println("Regular workers folder was created successfully!");
+		} else {
+			System.out.println("Regular workers folder already exists");
+		}
+
+		// importing clients		
+		File[] filesInside = clientsFolder.listFiles();
+		if (filesInside.length == 0) {
+			System.out.println("Directory clients is already empty");
+			return false;
+		}
+
+		for (File file : filesInside) {
+			clients.add((Client) deserializePerson(file));
+		}
+		System.out.println("Directory clients was imported successfully");
+		
+		// importing managers		
+		filesInside = managersFolder.listFiles();
+		if (filesInside.length == 0) {
+			System.out.println("Directory managers is already empty");
+			return false;
+		}
+
+		for (File file : filesInside) {
+			managers.add((Manager) deserializePerson(file));
+		}
+		System.out.println("Directory managers was imported successfully");
+		
+		// importing regular workers		
+		filesInside = regWorkersFolder.listFiles();
+		if (filesInside.length == 0) {
+			System.out.println("Directory regular workers is already empty");
+			return false;
+		}
+
+		for (File file : filesInside) {
+			regWorkers.add((RegularWorker) deserializePerson(file));
+		}
+		System.out.println("Directory regular workers was imported successfully");
+
+			return true;
+	}
+
+	private static boolean saveDataInFile() {
+
+		// inform user about what part of menu he entered
+		System.out.println(line + "\nSAVING DATA TO FILES menu is chosen...\nDo you want to save data into the files?");
+		System.out.println(line + "\n" + line + "\nYOUR CHOICE (Y/N): ");
+
+		// confirmation of saving data
+		inputString = scan.nextLine();
+
+		if (inputString.isBlank()) {
+			System.out.println("Your answer can't be blank" + "\n" + "Returning to the main menu...");
+			return false;
+		}
+		System.out.println(line + "\nAnswer " + inputString + " was chosen");
+
+		if (inputString.toUpperCase().charAt(0) != 'Y') {
+			System.out.println("Returning to the main menu...");
+			return false;
+		}
+
+		// creating base folder
+		File baseDir = new File(BASE);
+
+		if (baseDir.mkdirs()) {
+			System.out.println("Base folder was created successfully!");
+		} else {
+			System.out.println("Base folder already exists");
+		}
+
+		// creating folders for clients, managers and regular workers
+		// creating folder for clients
+		File clientsFolder = new File(BASE, "clients");
+
+		if (clientsFolder.mkdir()) {
+			System.out.println("Clients folder was created successfully!");
+		} else {
+			System.out.println("Clients folder already exists");
+		}
+
+		// creating folder for managers
+		File managersFolder = new File(BASE, "managers");
+
+		if (managersFolder.mkdir()) {
+			System.out.println("Managers folder was created successfully!");
+		} else {
+			System.out.println("Managers folder already exists");
+		}
+
+		// creating folder for regular workers
+		File regWorkersFolder = new File(BASE, "regWorkers");
+
+		if (regWorkersFolder.mkdir()) {
+			System.out.println("Regular workers folder was created successfully!");
+		} else {
+			System.out.println("Regular workers folder already exists");
+		}
+
+		// deleting all files in those folders
+		deleteFiles(clientsFolder);
+		deleteFiles(managersFolder);
+		deleteFiles(regWorkersFolder);
+
+		// creating files
+		// for clients list
+		if (!clients.isEmpty()) {
+			for (Client client : clients) {
+				serializePerson(client, "clients");
+			}
+			System.out.println("Clients were saved into files");
+		} else {
+			System.out.println("There are no clients to save");
+		}
+
+		// for managers list
+		if (!managers.isEmpty()) {
+			for (Manager manager : managers) {
+				serializePerson(manager, "managers");
+			}
+			System.out.println("Managers were saved into files");
+		} else {
+			System.out.println("There are no managers to save");
+		}
+
+		// for regular workers list
+		if (!regWorkers.isEmpty()) {
+			for (RegularWorker regWorker : regWorkers) {
+				serializePerson(regWorker, "regWorkers");
+			}
+			System.out.println("Regular workers were saved into files");
+		} else {
+			System.out.println("There are no regular workers to save");
+		}
+		return true;
+	}
+
+	// serialize Person
+	private static boolean serializePerson(Person pers, String path) {
+		String filePath = BASE + "\\" + path;
+		File personFile = new File(filePath, pers.getName() + ".ser");
+		try {
+			personFile.createNewFile();
+
+			FileOutputStream fileOutStream = new FileOutputStream(personFile);
+			ObjectOutputStream outStream = new ObjectOutputStream(fileOutStream);
+			outStream.writeObject(pers);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return true;
+	}
+
+	private static Person deserializePerson(File personFile) {
+		try {
+			personFile.createNewFile();
+
+			FileInputStream fileInStream = new FileInputStream(personFile);
+			ObjectInputStream inStream = new ObjectInputStream(fileInStream);
+			Person pers = (Person) inStream.readObject();
+			return pers;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// deletes files inside directory
+	private static boolean deleteFiles(File dir) {
+		if (!dir.isDirectory()) {
+			System.out.println("Can't delete files inside not a directory");
+			return false;
+		}
+		File[] filesInside = dir.listFiles();
+		if (filesInside.length == 0) {
+			System.out.println("Directory " + dir.getName() + " is already empty");
+			return false;
+		}
+
+		for (File file : filesInside) {
+			file.delete();
+		}
+		System.out.println("Directory " + dir.getName() + " was emptied successfully");
+		return true;
 	}
 
 	private static boolean populateAll() {
@@ -410,15 +684,12 @@ public class Main {
 				+ " 5  - to ASSIGN REGULAR WORKER to MANAGER's TEAM\n" + " 6  - to ENTER / MODIFY HOURS\n"
 				+ " 7  - to ENTER / MODIFY SPENDING\n" + " 8  - to TAKE SICKDAYS FOR REGULAR WORKERS\n"
 				+ " 9  - to TAKE VACATIONS FOR WORKERS (both regular workers and managers)\n"
-				+ " 10 - to CALCULATE PAYCHECK\n"
-				+ " 11 - >> TECHNICAL << monthly maintaince\n"
-				+ line + "\n"
+				+ " 10 - to CALCULATE PAYCHECK\n" + " 11 - >> TECHNICAL << monthly maintaince\n" + line + "\n"
 				+ " 12 - to get DETAILED YEARLY REPORT FOR WORKERS\n"
-				+ " 13 - to get DETAILED YEARLY REPORT FOR CLIENTS\n"
-				+ " 14 - to get CLIENTS YEARLY CHART\n"
+				+ " 13 - to get DETAILED YEARLY REPORT FOR CLIENTS\n" + " 14 - to get CLIENTS YEARLY CHART\n"
 				+ " 15 - to get WORKERS YEARLY CHART\n"
-				+ " 16 - to POPULATE WORKERS' HOURS and CLIENTS' SPENDINGS with data\n"
-				+ " 17 - to EXIT MENU\n" + line + "\n\n" + "YOUR CHOICE: ");
+				+ " 16 - to POPULATE WORKERS' HOURS and CLIENTS' SPENDINGS with data\n" + " 17 - to EXIT MENU\n" + line
+				+ "\n\n" + "YOUR CHOICE: ");
 	}
 
 	public static int tryStringToInt(String myInput) {
